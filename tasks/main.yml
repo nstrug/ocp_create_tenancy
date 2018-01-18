@@ -1,16 +1,30 @@
 ---
 
 - name: Check if tenancy already exists
-  shell: PATH=$PATH:/usr/local/bin oc get projects -l tenancy={{ tenancy|lower }} --token={{ ocp_token }}
+  shell: PATH=$PATH:/usr/local/bin oc get projects -l tenancy={{ tenancy|lower|replace('_', '-') }} --token={{ ocp_token }}
   register: cr
   changed_when: False
+  ignore_errors: True
+
+- name: Creating a group for the tenancy
+  shell: PATH=$PATH:/usr/local/bin oc adm groups new {{ tenancy|lower|replace('_', '-') }}  --token={{ ocp_token }}
+  when: "'No resources found' in cr.stderr"
+
+- name: Label the groups for the tenancy
+  shell: PATH=$PATH:/usr/local/bin oc label group {{ tenancy|lower|replace('_', '-') }} tenancy={{ tenancy|lower|replace('_', '-') }} --token={{ ocp_token }}
+  when: "'No resources found' in cr.stderr"
 
 - name: Create projects in tenancy
-  shell: PATH=$PATH:/usr/local/bin oc new-project {{ tenancy|lower }}-{{ item|lower }} --token={{ ocp_token }}
+  shell: PATH=$PATH:/usr/local/bin oc new-project {{ tenancy|lower|replace('_', '-') }}-{{ item|lower|replace('_', '-') }} --token={{ ocp_token }}
   with_items: "{{ projects }}"
   when: "'No resources found' in cr.stderr"
 
 - name: Label projects in tenancy
-  shell: PATH=$PATH:/usr/local/bin oc label namespace {{ tenancy|lower }}-{{ item|lower }} tenancy={{ tenancy|lower }} --token={{ ocp_token }}
+  shell: PATH=$PATH:/usr/local/bin oc label namespace {{ tenancy|lower|replace('_', '-') }}-{{ item|lower|replace('_', '-') }} tenancy={{ tenancy|lower|replace('_', '-') }} --token={{ ocp_token }}
+  with_items: "{{ projects }}"
+  when: "'No resources found' in cr.stderr"
+
+- name: Assign group to new projects
+  shell: PATH=$PATH:/usr/local/bin oc policy add-role-to-group admin {{ tenancy|lower|replace('_', '-') }} -n {{ tenancy|lower|replace('_', '-') }}-{{ item|lower|replace('_', '-') }}  --token={{ ocp_token }}
   with_items: "{{ projects }}"
   when: "'No resources found' in cr.stderr"
