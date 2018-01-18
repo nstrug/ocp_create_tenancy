@@ -26,7 +26,7 @@ A list of the external variables used by the role.
 
 | Variable  | Description  | Example  | Default |
 |---|---|---|---|
-| **tenancy**  | The name of the new |  mytenancy | (none) |
+| **tenancy**  | The name of the new tenancy |  mytenancy | (none) |
 | **projects**  | List of inital projects | proj1,proj2,proj3  |  dev,test,prod |
 | **ocp_token**  | Token for a serviceaccount with permission to create projects | (none)  |
 | **ocp_uri**  | URI for the cluster API | https://localhost:8443/  |
