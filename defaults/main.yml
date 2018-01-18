@@ -1,0 +1,8 @@
+---
+
+ocp_uri: https://localhost:8443/
+
+projects:
+  - dev
+  - test
+  - prod
